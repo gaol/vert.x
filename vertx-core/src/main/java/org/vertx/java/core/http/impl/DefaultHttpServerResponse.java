@@ -65,7 +65,7 @@ public class DefaultHttpServerResponse implements HttpServerResponse {
   	this.vertx = vertx;
   	this.conn = conn;
     this.version = request.getProtocolVersion();
-    this.response = new DefaultHttpResponse(version, HttpResponseStatus.OK);
+    this.response = new DefaultHttpResponse(version, HttpResponseStatus.OK, false);
     this.keepAlive = version == HttpVersion.HTTP_1_1 ||
         (version == HttpVersion.HTTP_1_0 && "Keep-Alive".equalsIgnoreCase(request.headers().get("Connection")));
   }
@@ -82,7 +82,7 @@ public class DefaultHttpServerResponse implements HttpServerResponse {
   public MultiMap trailers() {
     if (trailers == null) {
       if (trailing == null) {
-        trailing = new DefaultLastHttpContent();
+        trailing = new DefaultLastHttpContent(Unpooled.EMPTY_BUFFER, false);
       }
       trailers = new HttpHeadersAdapter(trailing.trailingHeaders());
     }
@@ -268,7 +268,7 @@ public class DefaultHttpServerResponse implements HttpServerResponse {
         if (trailing != null) {
           content = new AssembledLastHttpContent(data, trailing.trailingHeaders());
         } else {
-          content = new DefaultLastHttpContent(data);
+          content = new DefaultLastHttpContent(data, false);
         }
         channelFuture = conn.write(content);
       }

@@ -80,7 +80,7 @@ public class DefaultHttpClientRequest implements HttpClientRequest {
                                    final Handler<HttpClientResponse> respHandler,
                                    final DefaultContext context, final boolean raw) {
     this.client = client;
-    this.request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.valueOf(method), uri);
+    this.request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.valueOf(method), uri, false);
     this.chunked = false;
     this.respHandler = respHandler;
     this.context = context;
@@ -465,7 +465,7 @@ public class DefaultHttpClientRequest implements HttpClientRequest {
 
   private void writeEndChunk(ByteBuf buf) {
     if (buf.isReadable()) {
-      conn.write(new DefaultLastHttpContent(buf));
+      conn.write(new DefaultLastHttpContent(buf, false));
     } else {
       conn.write(LastHttpContent.EMPTY_LAST_CONTENT);
     }

@@ -185,7 +185,7 @@ public class DefaultHttpServer implements HttpServer, Closeable {
                 pipeline.addLast("ssl", new SslHandler(engine));
               }
               pipeline.addLast("flashpolicy", new FlashPolicyHandler());
-              pipeline.addLast("httpDecoder", new HttpRequestDecoder());
+              pipeline.addLast("httpDecoder", new HttpRequestDecoder(4096, 8192, 8192, false));
               pipeline.addLast("httpEncoder", new HttpResponseEncoder());
               if (compressionSupported) {
                 pipeline.addLast("deflater", new HttpChunkContentCompressor());
