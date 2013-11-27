@@ -28,6 +28,8 @@ import org.vertx.java.core.spi.cluster.ClusterManager;
 import org.vertx.java.core.spi.cluster.NodeListener;
 
 import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -45,6 +47,7 @@ class HazelcastClusterManager implements ClusterManager, MembershipListener {
   private static final Logger log = LoggerFactory.getLogger(HazelcastClusterManager.class);
   // Hazelcast config file
 
+  private static final String HAZELCAST_CONFIG_FILE_PROPERTY = "vertx.cluster.configuration.file";
   private static final String DEFAULT_CONFIG_FILE = "default-cluster.xml";
   private static final String CONFIG_FILE = "cluster.xml";
 
@@ -165,11 +168,39 @@ class HazelcastClusterManager implements ClusterManager, MembershipListener {
       log.error("Failed to handle memberRemoved", t);
     }
   }
+  
+  
+  private InputStream readFromClusterFile()
+  {
+     String clusterFile = System.getProperty(HAZELCAST_CONFIG_FILE_PROPERTY);
+     if (clusterFile == null || clusterFile.trim().length() == 0)
+     {
+        return null;
+     }
+     InputStream is = getClass().getClassLoader().getResourceAsStream(clusterFile);
+     if (is == null)
+     {
+        try
+        {
+           is = new FileInputStream(clusterFile);
+        }
+        catch (FileNotFoundException e)
+        {
+           log.warn("Can not find cluster file: " + clusterFile + ", try to use cluster.xml or default-cluster.xml.");
+           return null;
+        }
+     }
+     return is;
+  }
 
   private InputStream getConfigStream() {
-    InputStream is = getClass().getClassLoader().getResourceAsStream(CONFIG_FILE);
-    if (is == null) {
-      is = getClass().getClassLoader().getResourceAsStream(DEFAULT_CONFIG_FILE);
+    InputStream is = readFromClusterFile();
+    if (is == null)
+    {
+       is = getClass().getClassLoader().getResourceAsStream(CONFIG_FILE);
+       if (is == null) {
+         is = getClass().getClassLoader().getResourceAsStream(DEFAULT_CONFIG_FILE);
+       }
     }
     return is;
   }
