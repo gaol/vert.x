@@ -442,6 +442,10 @@ public class ConnectionPoolTest extends VertxTestBase {
     mgr.assertRequest();
     pool.close(onSuccess(lst -> {
       assertEquals(2, lst.size());
+
+      // does this assertion make sense?
+      // actually the pool.size() == 2 in this case.
+      assertEquals(0, pool.size());
       complete();
     }));
     await();
